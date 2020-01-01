@@ -22,3 +22,8 @@ Step3: 원 여러개 렌더링하기
 Step4: Lighting
 ----------
 * normal과 light vector간 dot product로 intensity 계산
+
+Step5: Specular Lighting
+----------
+* Material 추가
+* specular lighting 계산

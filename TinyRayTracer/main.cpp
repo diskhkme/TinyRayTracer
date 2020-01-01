@@ -6,13 +6,36 @@
 #include <algorithm> //<-- max/min 사용하기 위해 추가
 #include "geometry.h"
 
+struct Material {
+	Material(const Vec2f &a, const Vec3f &color, const float &spec) : albedo(a), diffuse_color(color), specular_exponent(spec) {}
+	Material() : albedo(1, 0), diffuse_color(), specular_exponent() {}
+	//Material(const Material& other) : albedo{ other.albedo }, diffuse_color{ other.diffuse_color }, specular_exponent{ other.specular_exponent }
+	//{
+	//}
+
+	Vec2f albedo;
+	Vec3f diffuse_color;
+	float specular_exponent;
+};
+
+struct Light
+{
+	//point light
+	Light(const Vec3f& p, const float& i) : position{ p }, intensity{ i }
+	{
+
+	}
+	Vec3f position;
+	float intensity;
+};
+
 struct Sphere
 {
 	Vec3f center;
 	float radius;
-	Vec3f color;
+	Material material;
 
-	Sphere(const Vec3f& c, const float& r, const Vec3f& color) : center{ c }, radius{ r }, color{color}
+	Sphere(const Vec3f& c, const float& r, const Material& mat) : center{ c }, radius{ r }, material{mat}
 	{
 
 	}
@@ -39,29 +62,12 @@ struct Sphere
 
 };
 
-struct Light
-{
-	//point light
-	Light(const Vec3f& p, const float& i) : position{ p }, intensity{ i }
-	{
-
-	}
-	Vec3f position;
-	float intensity;
-};
-
-float calcLighting(const std::vector<Light>& lights, const Vec3f& point, const Vec3f& normal)
-{
-	float diffuseIntensity = 0;
-	for (const Light& light : lights) //scene의 모든 light에 대해
-	{
-		Vec3f lightDir = (light.position - point).normalize(); //point와 빛의 방향으로,
-		diffuseIntensity += light.intensity * std::max(0.f, lightDir*normal); //intensity의 합을 계산함
-	}
-	return diffuseIntensity; //현재는 light color가 없으므로 intensity만 return
+Vec3f reflect(const Vec3f &light, const Vec3f &normal) {
+	return light - normal * 2.f*(light*normal);
 }
 
-Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene, const std::vector<Light>& lights)
+bool sceneIntersect(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene,
+	Vec3f& hit, Vec3f& N, Material &mat)
 {
 	float sphereDist = std::numeric_limits<float>::max();
 	Vec3f fillColor{};
@@ -70,37 +76,62 @@ Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& sc
 	{
 		if (s.rayIntersect(orig, dir, sphereDist))
 		{
-			Vec3f point = orig + dir * sphereDist;
-			float diffuseIntensity = calcLighting(lights, point, point - s.center);
-			fillColor = s.color * diffuseIntensity; //계산된 intensity를 color에 반영
-			filled = true;
+			hit = orig + dir * sphereDist;
+			N = (hit - s.center).normalize();
+			mat = s.material;
 		}
 	}
-	
-	if (!filled)
-		return Vec3f(0.2, 0.7, 0.8);
-	else
-		return fillColor;
+	return sphereDist < 1000;
 }
 
-void render() {
+void calcLighting(const std::vector<Light>& lights, const Vec3f& point, const Vec3f& normal, float& dIntensity, float& sIntensity)
+{
+	float diffuseIntensity = 0;
+	float specularIntensity = 0;
+
+	Vec3f view = point - Vec3f(0, 0, 0);
+	view = view.normalize();
+	for (const Light& light : lights) //scene의 모든 light에 대해
+	{
+		Vec3f lightDir = (light.position - point).normalize(); //point와 빛의 방향으로,
+		diffuseIntensity += light.intensity * std::max(0.f, lightDir*normal); //intensity의 합을 계산함
+
+		Vec3f r = reflect(lightDir, normal).normalize();
+		specularIntensity += light.intensity * std::powf(std::max(0.f, r*view), 50.f);
+	}
+	
+	dIntensity = diffuseIntensity;
+	sIntensity = specularIntensity;
+}
+
+Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene, const std::vector<Light>& lights)
+{
+	Vec3f point, N;
+	Material mat;
+
+	if (!sceneIntersect(orig, dir, scene, point, N, mat))
+	{
+		return Vec3f(0.2, 0.7, 0.8);
+	}
+
+	float diffuse_light_intensity = 0, specular_light_intensity = 0;
+	for(const Light& light : lights)
+	{
+		Vec3f light_dir = (light.position - point).normalize();
+
+		diffuse_light_intensity += light.intensity * std::max(0.f, light_dir*N);
+		specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N)*dir), mat.specular_exponent)*light.intensity;
+	}
+
+	return mat.diffuse_color * diffuse_light_intensity * mat.albedo[0] + Vec3f(1., 1., 1.)*specular_light_intensity * mat.albedo[1];
+}
+
+
+void render(const std::vector<Sphere>& scene, const std::vector<Light>& lights) {
 	const int width = 1024;
 	const int height = 768;
 	const int fov = 3.14f / 2.f;
 	std::vector<Vec3f> framebuffer(width*height);
-
-	Vec3f ivory{ 0.4,0.4,0.3 };
-	Vec3f red_rubber{ 0.3,0.1,0.1 };
-
-	std::vector<Sphere> scene;
-	scene.emplace_back(Vec3f(-3, 0, -16), 2, ivory);
-	scene.emplace_back(Vec3f(-1.0, -1.5, -12), 2, red_rubber);
-	scene.emplace_back(Vec3f(1.5, -0.5, -18), 3, red_rubber);
-	scene.emplace_back(Vec3f(7, 5, -18), 4, ivory);
-
-	std::vector<Light> lights;
-	lights.emplace_back(Vec3f(-20, 20, 20), 1.5f);
-
 
 	for (size_t j = 0; j < height; j++) {
 		for (size_t i = 0; i < width; i++) {
@@ -116,6 +147,10 @@ void render() {
 	ofs << "P6\n" << width << " " << height << "\n255\n";
 	for (size_t i = 0; i < height*width; ++i) {
 		for (size_t j = 0; j < 3; j++) {
+			Vec3f &c = framebuffer[i];
+			float max = std::max(c[0], std::max(c[1], c[2])); //saturation
+			if (max > 1) c = c * (1. / max); //normalize
+
 			ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i][j])));
 		}
 	}
@@ -123,6 +158,21 @@ void render() {
 }
 
 int main() {
-	render();
+
+	Material ivory(Vec2f(0.6, 0.3), Vec3f(0.4, 0.4, 0.3), 50.);
+	Material red_rubber(Vec2f(0.9, 0.1), Vec3f(0.3, 0.1, 0.1), 10.);
+
+	std::vector<Sphere> scene;
+	scene.emplace_back(Vec3f(-3, 0, -16), 2, ivory);
+	scene.emplace_back(Vec3f(-1.0, -1.5, -12), 2, red_rubber);
+	scene.emplace_back(Vec3f(1.5, -0.5, -18), 3, red_rubber);
+	scene.emplace_back(Vec3f(7, 5, -18), 4, ivory);
+
+	std::vector<Light> lights;
+	lights.emplace_back(Vec3f(-20, 20, 20), 1.5f);
+	lights.emplace_back(Vec3f(30, 50, -25), 1.8);
+	lights.emplace_back(Vec3f(30, 20, 30), 1.7);
+
+	render(scene,lights);
 	return 0;
 }
