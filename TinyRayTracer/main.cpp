@@ -39,7 +39,29 @@ struct Sphere
 
 };
 
-Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene)
+struct Light
+{
+	//point light
+	Light(const Vec3f& p, const float& i) : position{ p }, intensity{ i }
+	{
+
+	}
+	Vec3f position;
+	float intensity;
+};
+
+float calcLighting(const std::vector<Light>& lights, const Vec3f& point, const Vec3f& normal)
+{
+	float diffuseIntensity = 0;
+	for (const Light& light : lights) //scene의 모든 light에 대해
+	{
+		Vec3f lightDir = (light.position - point).normalize(); //point와 빛의 방향으로,
+		diffuseIntensity += light.intensity * std::max(0.f, lightDir*normal); //intensity의 합을 계산함
+	}
+	return diffuseIntensity; //현재는 light color가 없으므로 intensity만 return
+}
+
+Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene, const std::vector<Light>& lights)
 {
 	float sphereDist = std::numeric_limits<float>::max();
 	Vec3f fillColor{};
@@ -48,7 +70,9 @@ Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& sc
 	{
 		if (s.rayIntersect(orig, dir, sphereDist))
 		{
-			fillColor = s.color;
+			Vec3f point = orig + dir * sphereDist;
+			float diffuseIntensity = calcLighting(lights, point, point - s.center);
+			fillColor = s.color * diffuseIntensity; //계산된 intensity를 color에 반영
 			filled = true;
 		}
 	}
@@ -74,17 +98,21 @@ void render() {
 	scene.emplace_back(Vec3f(1.5, -0.5, -18), 3, red_rubber);
 	scene.emplace_back(Vec3f(7, 5, -18), 4, ivory);
 
+	std::vector<Light> lights;
+	lights.emplace_back(Vec3f(-20, 20, 20), 1.5f);
+
+
 	for (size_t j = 0; j < height; j++) {
 		for (size_t i = 0; i < width; i++) {
 			float x = (2 * (i + 0.5) / (float)width - 1) * tan(fov / 2.)*width / (float)height;
 			float y = -(2 * (j + 0.5) / (float)height - 1) * tan(fov / 2.);
 			Vec3f dir = Vec3f(x, y, -1).normalize();
-			framebuffer[i + j * width] = castRay(Vec3f(0, 0, 0), dir, scene); //카메라는 0,0,0에 위치
+			framebuffer[i + j * width] = castRay(Vec3f(0, 0, 0), dir, scene, lights);
 		}
 	}
 
 	std::ofstream ofs; // save the framebuffer to file
-	ofs.open("./out.ppm", std::ofstream::out | std::ofstream::binary); //<--수정
+	ofs.open("./out.ppm", std::ofstream::out | std::ofstream::binary);
 	ofs << "P6\n" << width << " " << height << "\n255\n";
 	for (size_t i = 0; i < height*width; ++i) {
 		for (size_t j = 0; j < 3; j++) {

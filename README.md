@@ -15,5 +15,10 @@ Step2: 원 렌더링하기
 </br><img src="/TinyRayTracer/Img/Step2.png" width="540" height="960"></img>
 
 Step3: 원 여러개 렌더링하기
+----------
 * 색깔 멤버 추가
 * 앞에 있는 색상이 칠해지도록 로직 추가
+
+Step4: Lighting
+----------
+* normal과 light vector간 dot product로 intensity 계산
