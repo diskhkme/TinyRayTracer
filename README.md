@@ -1,13 +1,14 @@
 # TinyRayTracer
 https://github.com/ssloy/tinyraytracer/wiki/Part-1:-understandable-raytracing
 
-Step1: ÀÌ¹ÌÁö ÀúÀåÇÏ±â
+Step1: ì´ë¯¸ì§€ ì €ì¥í•˜ê¸°
 -----------
-*Geometry / ÀÌ¹ÌÁö ÀúÀå ÄÚµå
- * Geometry.h¿¡´Â 2Â÷¿ø/3Â÷¿ø/4Â÷¿ø º¤ÅÍ ¹× ±× ¿¬»êÀÚ ¿À¹ö·Îµù Á¤ÀÇµÇ¾î ÀÖÀ½
- * main.cpp¿¡¼­´Â Ãâ·Â ÀÌ¹ÌÁö¸¦ std::vector<Vec3f>·Î ¸¸µé°í, ÀÌ¸¦ ppmÆÄÀÏ·Î Ãâ·Â
+ *Geometry / ì´ë¯¸ì§€ ì €ì¥ ì½”ë“œ
+ * Geometry.hì—ëŠ” 2ì°¨ì›/3ì°¨ì›/4ì°¨ì› ë²¡í„° ë° ê·¸ ì—°ì‚°ì ì˜¤ë²„ë¡œë”© ì •ì˜ë˜ì–´ ìˆìŒ
+ * main.cppì—ì„œëŠ” ì¶œë ¥ ì´ë¯¸ì§€ë¥¼ std::vector<Vec3f>ë¡œ ë§Œë“¤ê³ , ì´ë¥¼ ppmíŒŒì¼ë¡œ ì¶œë ¥
 
- Step2: ¿ø ·»´õ¸µÇÏ±â
+Step2: ì› ë Œë”ë§í•˜ê¸°
+----------- 
   *Ray Intersect
   *Cast Ray
   *Calculate dir for each pixel
