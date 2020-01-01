@@ -84,26 +84,6 @@ bool sceneIntersect(const Vec3f& orig, const Vec3f& dir, const std::vector<Spher
 	return sphereDist < 1000;
 }
 
-void calcLighting(const std::vector<Light>& lights, const Vec3f& point, const Vec3f& normal, float& dIntensity, float& sIntensity)
-{
-	float diffuseIntensity = 0;
-	float specularIntensity = 0;
-
-	Vec3f view = point - Vec3f(0, 0, 0);
-	view = view.normalize();
-	for (const Light& light : lights) //scene의 모든 light에 대해
-	{
-		Vec3f lightDir = (light.position - point).normalize(); //point와 빛의 방향으로,
-		diffuseIntensity += light.intensity * std::max(0.f, lightDir*normal); //intensity의 합을 계산함
-
-		Vec3f r = reflect(lightDir, normal).normalize();
-		specularIntensity += light.intensity * std::powf(std::max(0.f, r*view), 50.f);
-	}
-	
-	dIntensity = diffuseIntensity;
-	sIntensity = specularIntensity;
-}
-
 Vec3f castRay(const Vec3f& orig, const Vec3f& dir, const std::vector<Sphere>& scene, const std::vector<Light>& lights)
 {
 	Vec3f point, N;
