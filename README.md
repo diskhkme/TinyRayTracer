@@ -12,4 +12,4 @@ Step2: 원 렌더링하기
 * Ray Intersect
 * Cast Ray
 * Calculate dir for each pixel
-</br><img src="/TinyRayTracer/Img/Step2.jpg" width="540" height="960"></img>
+</br><img src="/TinyRayTracer/Img/Step2.png" width="540" height="960"></img>
