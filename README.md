@@ -27,3 +27,8 @@ Step5: Specular Lighting
 ----------
 * Material 추가
 * specular lighting 계산
+
+Step6: Shadow
+----------
+* point에서부터 light 방향으로 intersection을 한 번 더 계산하여 shadow 생성
+</br><img src="/TinyRayTracer/Img/Step6.png" width="540" height="960"></img>
