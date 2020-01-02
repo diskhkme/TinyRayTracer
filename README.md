@@ -36,3 +36,8 @@ Step6: Shadow
 Step7: Reflection
 ----------
 * dir의 refelction 방향으로 recursive하게 빛을 쏘아 반사 효과 생성
+
+Step8: Refraction
+----------
+* Snell's law를 사용하여 굴절 효과 생성
+</br><img src="/TinyRayTracer/Img/Step8.jpg" width="540" height="960"></img>
