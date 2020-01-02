@@ -32,3 +32,7 @@ Step6: Shadow
 ----------
 * point에서부터 light 방향으로 intersection을 한 번 더 계산하여 shadow 생성
 </br><img src="/TinyRayTracer/Img/Step6.png" width="540" height="960"></img>
+
+Step7: Reflection
+----------
+* dir의 refelction 방향으로 recursive하게 빛을 쏘아 반사 효과 생성
