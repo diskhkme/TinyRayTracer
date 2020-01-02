@@ -41,3 +41,7 @@ Step8: Refraction
 ----------
 * Snell's law를 사용하여 굴절 효과 생성
 </br><img src="/TinyRayTracer/Img/Step8.jpg" width="540" height="960"></img>
+
+Step9 : Add checkerboard
+----------
+* 직선, 평면의 교차 식을 이용하여 checkerboard 평면에 대한 interection을 추가 계산
